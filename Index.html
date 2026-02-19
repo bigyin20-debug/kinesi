@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filip's Training App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #passwordOverlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        #passwordOverlay.hidden {
+            display: none;
+        }
+
+        .password-box {
+            background: rgba(15, 23, 42, 0.97);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 40px 35px;
+            text-align: center;
+            max-width: 360px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
+        .password-box h2 {
+            color: #60a5fa;
+            font-size: 1.8em;
+            margin-bottom: 8px;
+        }
+
+        .password-box p {
+            color: #94a3b8;
+            font-size: 0.95em;
+            margin-bottom: 28px;
+        }
+
+        .password-box input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            color: #e0e7ff;
+            font-size: 1.1em;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+        }
+
+        .password-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+        }
+
+        .password-box button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .password-box button:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+        }
+
+        .password-error {
+            color: #ef4444;
+            font-size: 0.9em;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #e0e7ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        h1 {
+            font-size: 2em;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            margin-bottom: 10px;
+            color: #60a5fa;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 15px;
+            border: 1px solid #475569;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat {
+            text-align: center;
+            background: rgba(51, 65, 85, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #475569;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #60a5fa;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #94a3b8;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .motivational-message {
+            text-align: center;
+            padding: 18px;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #94a3b8;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        input, select, button, textarea {
+            width: 100%;
+            padding: 14px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            color: #e0e7ff;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #3b82f6;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #64748b;
+        }
+
+        select option {
+            background: #1e293b;
+            color: #e0e7ff;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+            border-color: #60a5fa;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+
+        .btn-danger:hover {
+            background: #ff0000;
+            color: #fff;
+            box-shadow: 0 0 15px #ff0000;
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .btn-blue:hover {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: #fff;
+        }
+
+        .suggestion-btn {
+            padding: 10px;
+            font-size: 0.9em;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid #475569;
+        }
+
+        .suggestion-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
+        }
+
+        #videoLinkContainer a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
+        .exercise-suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .suggestion-btn {
+            padding: 10px;
+            font-size: 0.9em;
+            background: rgba(255, 107, 53, 0.2);
+            border: 1px solid #ff6b35;
+        }
+
+        .workout-log {
+            margin-top: 20px;
+        }
+
+        .workout-entry {
+            background: rgba(30, 41, 59, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3b82f6;
+            border: 1px solid #475569;
+        }
+
+        .workout-entry h4 {
+            color: #60a5fa;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .workout-details {
+            font-size: 0.9em;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 15px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 5px 5px 5px 0;
+            font-weight: 600;
+            color: #93c5fd;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(15, 23, 42, 0.98);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            z-index: 1000;
+            animation: popIn 0.5s forwards;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        @keyframes popIn {
+            to {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .achievement-popup h2 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .achievement-popup p {
+            color: #94a3b8;
+            font-size: 1.1em;
+        }
+
+        .achievement-icon {
+            font-size: 4em;
+            margin: 20px 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .tab.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            color: #60a5fa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .streak-indicator {
+            text-align: center;
+            padding: 25px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid #475569;
+        }
+
+        .streak-number {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #60a5fa;
+            animation: pulse 2s infinite;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 1px solid #475569;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            transition: width 0.5s;
+        }
+
+        .exercise-search-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .exercise-search-wrapper label {
+            display: block;
+            margin-bottom: 5px;
+            color: #94a3b8;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        .search-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .search-input-row input {
+            flex: 1;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            pointer-events: none;
+            font-size: 1.1em;
+        }
+
+        .search-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            z-index: 100;
+            max-height: 220px;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            margin-top: 4px;
+        }
+
+        .search-dropdown.open {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            color: #e0e7ff;
+            font-size: 0.95em;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+            transition: background 0.15s;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover, .search-result-item.highlighted {
+            background: rgba(59, 130, 246, 0.25);
+        }
+
+        .search-result-item .result-name {
+            font-weight: 600;
+            color: #93c5fd;
+        }
+
+        .search-result-item .result-category {
+            font-size: 0.8em;
+            color: #64748b;
+        }
+
+        .search-result-item .result-match {
+            color: #fbbf24;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff0000;
+            cursor: pointer;
+            float: right;
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+
+        .delete-btn:hover {
+            color: #fff;
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        .photo-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 8px 14px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            color: #34d399;
+            font-size: 0.85em;
+            cursor: pointer;
+            width: auto;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .photo-upload-btn:hover {
+            background: rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .photo-preview {
+            margin-top: 10px;
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 10px;
+            border: 2px solid #10b981;
+            display: block;
+            object-fit: cover;
+        }
+
+        .photo-delete-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(239, 68, 68, 0.85);
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            color: #fff;
+            font-size: 0.8em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-weight: bold;
+        }
+
+        .photo-delete-btn:hover {
+            background: #ef4444;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="passwordOverlay">
+        <div class="password-box">
+            <h2>🔒 REVALIDATIE FILIP</h2>
+            <p>Voer het wachtwoord in om toegang te krijgen</p>
+            <input type="password" id="passwordInput" placeholder="Wachtwoord" onkeydown="if(event.key==='Enter') checkPassword()">
+            <button onclick="checkPassword()">🔓 Toegang</button>
+            <div class="password-error" id="passwordError"></div>
+        </div>
+    </div>
+    <div class="container">
+        <header>
+            <h1>💪 REVALIDATIE FILIP</h1>
+            <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" style="position: absolute; top: 20px; right: 20px; width: auto; padding: 10px 18px; background: rgba(59, 130, 246, 0.3); border: 1px solid #3b82f6; border-radius: 20px; cursor: pointer; font-size: 0.9em;">
+                🔊 Geluid Aan
+            </button>
+            
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value" id="workoutCount">0</div>
+                    <div class="stat-label">Totaal Workouts</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="currentStreak">0</div>
+                    <div class="stat-label">Dagen Streak 🔥</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalVolume">0</div>
+                    <div class="stat-label">Totaal Volume (kg)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="avgVolume">0</div>
+                    <div class="stat-label">Gem. Volume</div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSfN7EKIH2k0g1_F5dxXoukJLWIxxT0JXgbPK-B-EEMkEDxquA/viewform?usp=dialog" target="_blank" style="text-decoration: none;">
+                    <button class="btn-blue" style="margin: 0;">📋 Trainingsformulier</button>
+                </a>
+                <button class="btn-danger" onclick="confirmClearData()" style="margin: 0;">🗑️ Wis Alle Data</button>
+            </div>
+        </header>
+
+        <div class="motivational-message" id="motivationalMessage">
+            Klaar om je workout te knallen! 💪
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('workout')">Nieuwe Workout</div>
+            <div class="tab" onclick="switchTab('history')">Geschiedenis</div>
+            <div class="tab" onclick="switchTab('stats')">Statistieken</div>
+        </div>
+
+        <div id="workoutTab" class="tab-content active">
+            <div class="section">
+                <h3 class="section-title">📋 Log Je Oefening</h3>
+                
+                <div class="form-group">
+                    <label>Oefening Type</label>
+                    <select id="exerciseType" onchange="updateSuggestions()">
+                        <option value="">Selecteer Type</option>
+                        <option value="pulling">Trek Beweging</option>
+                        <option value="pushing">Duw Beweging</option>
+                        <option value="shoulders">Schouder Raises</option>
+                        <option value="core">Core Oefening</option>
+                        <option value="kneerehab">Knie Revalidatie</option>
+                        <option value="cardio">Cardio</option>
+                    </select>
+                </div>
+
+                <div id="suggestionsContainer" style="display: none;">
+                    <label>Suggesties (klik om te selecteren)</label>
+                    <div class="exercise-suggestions" id="exerciseSuggestions"></div>
+                </div>
+
+                <div class="exercise-search-wrapper">
+                    <label>🔍 Zoek Oefening</label>
+                    <div style="position: relative;">
+                        <input type="text" id="exerciseSearch" placeholder="Type om snel een oefening te vinden..." autocomplete="off" oninput="handleExerciseSearch(event)" onkeydown="handleSearchKeydown(event)" onfocus="handleExerciseSearch(event)">
+                        <span class="search-icon">🔍</span>
+                        <div class="search-dropdown" id="searchDropdown"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Oefening Naam</label>
+                    <input type="text" id="exerciseName" placeholder="bijv. Barbell Row">
+                </div>
+
+                <div class="form-group">
+                    <label>Instructie</label>
+                    <textarea id="exerciseInstruction" placeholder="bijv. Isometrisch 20s vanuit 90° hoek" rows="3" style="resize: vertical; font-family: inherit;"></textarea>
+                </div>
+
+                <div id="strengthFields">
+                    <div class="form-group">
+                        <label>Gewicht (kg)</label>
+                        <input type="number" id="weight" placeholder="bijv. 60" step="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Herhalingen</label>
+                        <input type="number" id="reps" placeholder="bijv. 10">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sets</label>
+                        <input type="number" id="sets" placeholder="bijv. 3">
+                    </div>
+                </div>
+
+                <div id="cardioFields" style="display: none;">
+                    <div class="form-group">
+                        <label>Minuten</label>
+                        <input type="number" id="minutes" placeholder="bijv. 30" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Afstand (km)</label>
+                        <input type="number" id="distance" placeholder="bijv. 5.5" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>RPE (Ervaren Inspanning 1-10)</label>
+                    <input type="number" id="rpe" placeholder="bijv. 8" min="1" max="10">
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <button class="btn-primary" onclick="logExercise()">💪 Log Oefening</button>
+                    <button class="btn-primary" onclick="completeWorkout()">✅ Voltooi Workout</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">Vandaag's Sessie</h3>
+                <div id="currentSession"></div>
+            </div>
+        </div>
+
+        <div id="historyTab" class="tab-content">
+            <div class="section">
+                <h3 class="section-title">📊 Workout Geschiedenis</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="exportPDF()">📄 Exporteer als PDF</button>
+                    <button class="btn-primary" onclick="showQuestionnaires()">📋 Vragenlijsten</button>
+                </div>
+                <button class="btn-primary" style="margin-bottom: 15px; background: rgba(30,41,59,0.6); border: 1px solid #475569;" onclick="exportData()">📧 Exporteer via Email</button>
+                <button class="btn-danger" onclick="confirmClearData()">🗑️ Wis Alle Data</button>
+                <div id="workoutHistory" class="workout-log"></div>
+            </div>
+        </div>
+
+        <div id="statsTab" class="tab-content">
+            <div class="section">
+                <h3 class="section-title">📈 Jouw Voortgang</h3>
+                
+                <div class="streak-indicator">
+                    <div>Huidige Streak</div>
+                    <div class="streak-number" id="streakDisplay">0</div>
+                    <div>dagen 🔥</div>
+                </div>
+
+                <div>
+                    <label>Wekelijks Doel Voortgang</label>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="weekProgressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4 class="section-title">🏆 Prestaties</h4>
+                    <div id="achievementsList"></div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4 class="section-title">📊 Statistieken</h4>
+                    <div id="statsInfo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sound settings
+        let soundEnabled = JSON.parse(localStorage.getItem('soundEnabled')) || true;
+
+        // Web Audio API setup for sound effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            // Resume audio context if it's suspended (browser autoplay policy)
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            switch(type) {
+                case 'success': // Voor het loggen van een oefening - kort en vrolijk
+                    playTone([
+                        {freq: 800, time: 0, duration: 0.08},
+                        {freq: 1000, time: 0.08, duration: 0.08}
+                    ], 'sine', 0.25);
+                    break;
+                    
+                case 'complete': // Voor het voltooien van een workout - Duolingo-achtig fanfare
+                    playTone([
+                        {freq: 523.25, time: 0, duration: 0.12},      // C5
+                        {freq: 659.25, time: 0.12, duration: 0.12},   // E5
+                        {freq: 783.99, time: 0.24, duration: 0.12},   // G5
+                        {freq: 1046.50, time: 0.36, duration: 0.25}   // C6 - langer
+                    ], 'sine', 0.3);
+                    
+                    // Voeg een tweede laag toe voor rijkere klank
+                    setTimeout(() => {
+                        playTone([
+                            {freq: 1046.50, time: 0, duration: 0.15},
+                            {freq: 1318.51, time: 0.15, duration: 0.2}
+                        ], 'triangle', 0.15);
+                    }, 360);
+                    break;
+                    
+                case 'achievement': // Voor achievements - triomfantelijk en speels
+                    playTone([
+                        {freq: 659.25, time: 0, duration: 0.1},       // E5
+                        {freq: 783.99, time: 0.1, duration: 0.1},     // G5
+                        {freq: 1046.50, time: 0.2, duration: 0.15},   // C6
+                        {freq: 1318.51, time: 0.35, duration: 0.1},   // E6
+                        {freq: 1568.00, time: 0.45, duration: 0.25}   // G6 - langer
+                    ], 'sine', 0.35);
+                    
+                    // Voeg glitter/sparkle effect toe
+                    setTimeout(() => {
+                        playTone([
+                            {freq: 2093, time: 0, duration: 0.08},
+                            {freq: 2637, time: 0.08, duration: 0.1}
+                        ], 'sine', 0.12);
+                    }, 450);
+                    break;
+                    
+                case 'streak': // Voor streak updates - energiek en bevestigend
+                    playTone([
+                        {freq: 1046.50, time: 0, duration: 0.06},
+                        {freq: 1318.51, time: 0.06, duration: 0.06},
+                        {freq: 1568.00, time: 0.12, duration: 0.12}
+                    ], 'sine', 0.28);
+                    break;
+            }
+        }
+
+        function playTone(notes, waveType = 'sine', baseVolume = 0.3) {
+            notes.forEach(note => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = waveType;
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(note.freq, audioContext.currentTime + note.time);
+                
+                // Volume envelope - attack and decay
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime + note.time);
+                gainNode.gain.linearRampToValueAtTime(baseVolume, audioContext.currentTime + note.time + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.time + note.duration);
+                
+                oscillator.start(audioContext.currentTime + note.time);
+                oscillator.stop(audioContext.currentTime + note.time + note.duration);
+            });
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', JSON.stringify(soundEnabled));
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊 Geluid Aan' : '🔇 Geluid Uit';
+            
+            // Speel een test geluid af als geluid wordt aangezet
+            if (soundEnabled) {
+                playSound('success');
+            }
+        }
+
+        // Initialize sound button
+        window.addEventListener('load', () => {
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊 Geluid Aan' : '🔇 Geluid Uit';
+        });
+
+        const exercises = {
+            pulling: [
+                { name: 'Barbell Row', video: 'https://www.youtube.com/watch?v=FWJR5Ve8bnQ', instruction: 'Rug recht, 45° voorover, trek naar navel' },
+                { name: 'Pull-ups', video: 'https://www.youtube.com/watch?v=eGo4IYlbE5g', instruction: 'Volledige ROM, kin boven de stang' },
+                { name: 'Lat Pulldown', video: 'https://www.youtube.com/watch?v=CAwf7n6Luuc', instruction: 'Trek naar borst, schouderbladen samen' },
+                { name: 'Seated Cable Row', video: 'https://www.youtube.com/watch?v=GZbfZ033f74', instruction: 'Torso stabiel, trek naar onderbuik' },
+                { name: 'T-Bar Row', video: 'https://www.youtube.com/watch?v=j3Igk5nyZE4', instruction: 'Neutrale grip, explosieve trek' },
+                { name: 'Face Pulls', video: 'https://www.youtube.com/watch?v=rep-qVOkqgk', instruction: 'Trek naar gezicht, externe rotatie' },
+                { name: 'Dumbbell Row', video: 'https://www.youtube.com/watch?v=roCP6wCXPqo', instruction: 'Eén arm, steun op bank, trek naar heup' },
+                { name: 'Chin-ups', video: 'https://www.youtube.com/watch?v=bGNyGda70P0', instruction: 'Onderhandse grip, focus op biceps' },
+                { name: 'Pendlay Row', video: 'https://www.youtube.com/watch?v=nTHD00E1Fr0', instruction: 'Start vanaf grond, explosief omhoog' },
+                { name: 'Inverted Row', video: 'https://www.youtube.com/watch?v=hXTc1mDnZCw', instruction: 'Lichaam recht, borst naar stang' },
+                { name: 'Cable Pullover', video: 'https://www.youtube.com/watch?v=8Uos80hLBwA', instruction: 'Gestrekte armen, trek naar heupen' },
+                { name: 'Chest Supported Row', video: 'https://www.youtube.com/watch?v=3ByDZHKkGQM', instruction: 'Buik op bank, minder rug stress' }
+            ],
+            pushing: [
+                { name: 'Bench Press', video: 'https://www.youtube.com/watch?v=rT7DgCr-3pg', instruction: 'Stang naar mid-borst, voeten plat' },
+                { name: 'Push-ups', video: 'https://www.youtube.com/watch?v=IODxDxX7oi4', instruction: 'Lichaam recht, volle ROM' },
+                { name: 'Overhead Press', video: 'https://www.youtube.com/watch?v=2yjwXTZQDDI', instruction: 'Vanaf schouders, verticaal omhoog' },
+                { name: 'Dumbbell Press', video: 'https://www.youtube.com/watch?v=VmB1G1K7v94', instruction: 'Natuurlijke boog, ellebogen 45°' },
+                { name: 'Dips', video: 'https://www.youtube.com/watch?v=2z8JmcrW-As', instruction: 'Voorover voor borst, recht voor triceps' },
+                { name: 'Incline Press', video: 'https://www.youtube.com/watch?v=SrqOu55lrYU', instruction: '30-45° hoek, focus bovenborst' },
+                { name: 'Close-grip Press', video: 'https://www.youtube.com/watch?v=nEF0bv2FW94', instruction: 'Handen schouderbreed, ellebogen in' },
+                { name: 'Decline Press', video: 'https://www.youtube.com/watch?v=LfyQBUKR8SE', instruction: 'Focus onderborst, voeten vast' },
+                { name: 'Cable Chest Fly', video: 'https://www.youtube.com/watch?v=Iwe6AmxVf7o', instruction: 'Lichte buiging, knijp samen' },
+                { name: 'Landmine Press', video: 'https://www.youtube.com/watch?v=UkfRy4xUXio', instruction: 'Schuine hoek, schouder-vriendelijk' },
+                { name: 'Floor Press', video: 'https://www.youtube.com/watch?v=uUGDRwge4F8', instruction: 'Ellebogen raken grond, triceps focus' },
+                { name: 'Machine Chest Press', video: 'https://www.youtube.com/watch?v=xUm0BiZCWlQ', instruction: 'Gecontroleerd, veilig tot falen' }
+            ],
+            shoulders: [
+                { name: 'Lateral Raises', video: 'https://www.youtube.com/watch?v=3VcKaXpzqRo', instruction: 'Tot schouderhoogte, ellebogen gebogen' },
+                { name: 'Front Raises', video: 'https://www.youtube.com/watch?v=xXYJTUWMSJ4', instruction: 'Tot ooghoogte, gecontroleerd neer' },
+                { name: 'Rear Delt Flys', video: 'https://www.youtube.com/watch?v=DFG9hDQMWMI', instruction: 'Voorover, focus achterste delt' },
+                { name: 'Arnold Press', video: 'https://www.youtube.com/watch?v=6Z15_WdXmVw', instruction: 'Rotatie tijdens drukken, volle activatie' },
+                { name: 'Cable Raises', video: 'https://www.youtube.com/watch?v=PPrzBWZDOik', instruction: 'Constante spanning, varieer hoek' },
+                { name: 'Upright Row', video: 'https://www.youtube.com/watch?v=2WKqS-mDSMM', instruction: 'Trek tot borst, ellebogen hoog' },
+                { name: 'Reverse Fly', video: 'https://www.youtube.com/watch?v=ea4tRcGw6hQ', instruction: 'Achterwaarts, schouderbladen samen' },
+                { name: 'Military Press', video: 'https://www.youtube.com/watch?v=wol7Hko8RhY', instruction: 'Staand, core stabiel' },
+                { name: 'Cable Face Pull', video: 'https://www.youtube.com/watch?v=rep-qVOkqgk', instruction: 'Hoog op kabel, trek naar oren' },
+                { name: 'Dumbbell Shrugs', video: 'https://www.youtube.com/watch?v=cJRVVxmytaM', instruction: 'Schouders omhoog, geen rollen' }
+            ],
+            core: [
+                { name: 'Planks', video: 'https://www.youtube.com/watch?v=ASdvN_XEl_c', instruction: 'Lichaam recht, hou 30-60s' },
+                { name: 'Hanging Leg Raises', video: 'https://www.youtube.com/watch?v=hdng3Nm1x_E', instruction: 'Benen recht, til horizontaal' },
+                { name: 'Ab Wheel', video: 'https://www.youtube.com/watch?v=n3tDkRwv5ts', instruction: 'Gecontroleerd uitrollen en terug' },
+                { name: 'Russian Twists', video: 'https://www.youtube.com/watch?v=wkD8rjkodUI', instruction: 'Roteer torso, touch grond beiden' },
+                { name: 'Dead Bug', video: 'https://www.youtube.com/watch?v=4XLEnwUr1d8', instruction: 'Onderrug plat, tegengestelde beweging' },
+                { name: 'Pallof Press', video: 'https://www.youtube.com/watch?v=AH_QZLm_0-s', instruction: 'Anti-rotatie, druk weg van lichaam' },
+                { name: 'Cable Crunches', video: 'https://www.youtube.com/watch?v=Xyd_fa5zoEU', instruction: 'Knielend, trek met abs niet armen' },
+                { name: 'Bicycle Crunches', video: 'https://www.youtube.com/watch?v=9FGilxCbdz8', instruction: 'Elleboog naar tegengestelde knie' },
+                { name: 'Mountain Climbers', video: 'https://www.youtube.com/watch?v=nmwgirgXLYM', instruction: 'Plank positie, wissel knieën' },
+                { name: 'Side Planks', video: 'https://www.youtube.com/watch?v=K2VljzCC16g', instruction: 'Op elleboog, heupen omhoog 30-45s' },
+                { name: 'Leg Raises', video: 'https://www.youtube.com/watch?v=JB2oyawG9KI', instruction: 'Liggend, benen recht til tot 90°' },
+                { name: 'Wood Choppers', video: 'https://www.youtube.com/watch?v=pAplQXk3dkU', instruction: 'Diagonale beweging, roteer vanuit core' }
+            ],
+            kneerehab: [
+                { name: 'KB Knee Extension', video: 'https://drive.google.com/file/d/1PI_uYliwwAa82NaTLwtLJ8gd4TiDp6fT/view?usp=drivesdk', instruction: 'Isometrisch 20s vanuit 90° hoek' },
+                { name: 'Step Up Barbell', video: 'https://drive.google.com/file/d/1D0xoeel-dFhGToXGrPIvgiTKqdsimb2L/view?usp=drivesdk', instruction: 'Gecontroleerd omhoog, focus op aangedane been' }
+            ],
+            cardio: [
+                { name: 'Lopen', video: 'https://www.youtube.com/watch?v=wCVSv7UxB2E', instruction: 'Steady state of interval, monitor hartslag' },
+                { name: 'Fietsen', video: 'https://www.youtube.com/watch?v=ZmN9JTIuNBY', instruction: 'Juiste zithoogte, cadans 80-100 rpm' },
+                { name: 'Crosstrainer', video: 'https://www.youtube.com/watch?v=EcFLE_7mPcc', instruction: 'Volledig bewegingsbereik, gebruik armen' }
+            ]
+        };
+
+        const motivationalMessages = [
+            "Je bent bezig, Filip! 💪",
+            "Weer een herhaling dichter bij je doel! 🔥",
+            "Consistentie is de sleutel - blijf gaan! 🎯",
+            "Je toekomstige zelf zal je dankbaar zijn! 💯",
+            "Geen pijn, geen resultaat! Laten we gaan! ⚡",
+            "Beast mode: GEACTIVEERD! 🦁",
+            "Je bent sterker dan gisteren! 📈",
+            "Kampioenen trainen ook op dagen dat ze geen zin hebben! 👑"
+        ];
+
+        let currentSession = [];
+        let workoutData = JSON.parse(localStorage.getItem('workoutData')) || {
+            workouts: [],
+            totalWorkouts: 0,
+            currentStreak: 0,
+            lastWorkoutDate: null,
+            achievements: [],
+            totalVolume: 0
+        };
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            if (tab === 'history') {
+                displayHistory();
+            } else if (tab === 'stats') {
+                displayStats();
+            }
+        }
+
+        // Build flat list of all exercises for search
+        function getAllExercises() {
+            const categoryLabels = {
+                pulling: 'Trek Beweging',
+                pushing: 'Duw Beweging',
+                shoulders: 'Schouder Raises',
+                core: 'Core Oefening',
+                kneerehab: 'Knie Revalidatie',
+                cardio: 'Cardio'
+            };
+            const all = [];
+            for (const [cat, list] of Object.entries(exercises)) {
+                list.forEach(ex => {
+                    all.push({ ...ex, category: cat, categoryLabel: categoryLabels[cat] });
+                });
+            }
+            return all;
+        }
+
+        let searchHighlightIndex = -1;
+
+        function handleExerciseSearch(event) {
+            const query = document.getElementById('exerciseSearch').value.trim().toLowerCase();
+            const dropdown = document.getElementById('searchDropdown');
+            searchHighlightIndex = -1;
+
+            if (query.length === 0) {
+                dropdown.classList.remove('open');
+                return;
+            }
+
+            const allEx = getAllExercises();
+            const matches = allEx.filter(ex => ex.name.toLowerCase().includes(query));
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div class="search-result-item"><span class="result-name" style="color:#64748b;">Geen oefeningen gevonden</span></div>';
+                dropdown.classList.add('open');
+                return;
+            }
+
+            dropdown.innerHTML = matches.map((ex, i) => {
+                const nameLower = ex.name.toLowerCase();
+                const idx = nameLower.indexOf(query);
+                const highlighted = ex.name.slice(0, idx) + '<span class="result-match">' + ex.name.slice(idx, idx + query.length) + '</span>' + ex.name.slice(idx + query.length);
+                return `<div class="search-result-item" onclick="selectSearchResult('${ex.name}', '${ex.video}', '${(ex.instruction || '').replace(/'/g, "\\'")}', '${ex.category}')">
+                    <span class="result-name">${highlighted}</span>
+                    <span class="result-category">${ex.categoryLabel}</span>
+                </div>`;
+            }).join('');
+
+            dropdown.classList.add('open');
+        }
+
+        function handleSearchKeydown(event) {
+            const dropdown = document.getElementById('searchDropdown');
+            const items = dropdown.querySelectorAll('.search-result-item');
+            if (!dropdown.classList.contains('open')) return;
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                searchHighlightIndex = Math.min(searchHighlightIndex + 1, items.length - 1);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                searchHighlightIndex = Math.max(searchHighlightIndex - 1, 0);
+            } else if (event.key === 'Enter' && searchHighlightIndex >= 0) {
+                event.preventDefault();
+                items[searchHighlightIndex].click();
+                return;
+            } else if (event.key === 'Escape') {
+                dropdown.classList.remove('open');
+                return;
+            }
+
+            items.forEach((item, i) => {
+                item.classList.toggle('highlighted', i === searchHighlightIndex);
+            });
+        }
+
+        function selectSearchResult(name, videoUrl, instruction, category) {
+            // Set exercise type dropdown
+            const typeSelect = document.getElementById('exerciseType');
+            typeSelect.value = category;
+            updateSuggestions();
+
+            // Fill exercise name
+            document.getElementById('exerciseName').value = name;
+
+            // Fill instruction
+            document.getElementById('exerciseInstruction').value = instruction || '';
+
+            // Show video link
+            const existingVideo = document.getElementById('videoLinkContainer');
+            if (existingVideo) existingVideo.remove();
+
+            if (videoUrl && videoUrl !== 'undefined') {
+                const videoContainer = document.createElement('div');
+                videoContainer.id = 'videoLinkContainer';
+                videoContainer.style.cssText = 'margin: 10px 0; padding: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; border-radius: 10px; text-align: center;';
+                videoContainer.innerHTML = `<a href="${videoUrl}" target="_blank" style="color: #60a5fa; text-decoration: none; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">🎥 Bekijk video uitleg van ${name}</a>`;
+                document.getElementById('exerciseInstruction').parentElement.appendChild(videoContainer);
+            }
+
+            // Close dropdown and clear search
+            document.getElementById('searchDropdown').classList.remove('open');
+            document.getElementById('exerciseSearch').value = '';
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const wrapper = document.querySelector('.exercise-search-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                const dropdown = document.getElementById('searchDropdown');
+                if (dropdown) dropdown.classList.remove('open');
+            }
+        });
+
+        function updateSuggestions() {
+            const type = document.getElementById('exerciseType').value;
+            const container = document.getElementById('suggestionsContainer');
+            const suggestions = document.getElementById('exerciseSuggestions');
+            
+            // Show/hide appropriate input fields
+            const strengthFields = document.getElementById('strengthFields');
+            const cardioFields = document.getElementById('cardioFields');
+            
+            if (type === 'cardio') {
+                strengthFields.style.display = 'none';
+                cardioFields.style.display = 'block';
+            } else {
+                strengthFields.style.display = 'block';
+                cardioFields.style.display = 'none';
+            }
+            
+            if (type && exercises[type]) {
+                container.style.display = 'block';
+                suggestions.innerHTML = exercises[type].map(ex => 
+                    `<button class="suggestion-btn" onclick="selectExercise('${ex.name}', '${ex.video}', '${ex.instruction || ''}')" title="Klik om te selecteren">
+                        ${ex.name}
+                    </button>`
+                ).join('');
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function selectExercise(name, videoUrl, instruction) {
+            document.getElementById('exerciseName').value = name;
+            
+            // Fill in instruction if available
+            if (instruction && instruction !== 'undefined') {
+                document.getElementById('exerciseInstruction').value = instruction;
+            } else {
+                document.getElementById('exerciseInstruction').value = '';
+            }
+            
+            // Show video link
+            const existingVideo = document.getElementById('videoLinkContainer');
+            if (existingVideo) {
+                existingVideo.remove();
+            }
+            
+            if (videoUrl && videoUrl !== 'undefined') {
+                const videoContainer = document.createElement('div');
+                videoContainer.id = 'videoLinkContainer';
+                videoContainer.style.cssText = 'margin: 10px 0; padding: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; border-radius: 10px; text-align: center;';
+                videoContainer.innerHTML = `
+                    <a href="${videoUrl}" target="_blank" style="color: #60a5fa; text-decoration: none; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        🎥 Bekijk video uitleg van ${name}
+                    </a>
+                `;
+                document.getElementById('exerciseInstruction').parentElement.appendChild(videoContainer);
+            }
+        }
+
+        function logExercise() {
+            const exerciseName = document.getElementById('exerciseName').value;
+            const exerciseType = document.getElementById('exerciseType').value;
+            const exerciseInstruction = document.getElementById('exerciseInstruction').value;
+            const rpe = document.getElementById('rpe').value;
+
+            if (!exerciseName || !rpe) {
+                alert('Vul minimaal oefening naam en RPE in!');
+                return;
+            }
+
+            let exercise = {
+                name: exerciseName,
+                type: exerciseType,
+                instruction: exerciseInstruction || '',
+                rpe: parseInt(rpe),
+                timestamp: new Date().toISOString()
+            };
+
+            // Add type-specific fields
+            if (exerciseType === 'cardio') {
+                const minutes = document.getElementById('minutes').value;
+                const distance = document.getElementById('distance').value;
+                
+                if (!minutes || !distance) {
+                    alert('Vul minuten en afstand in voor cardio!');
+                    return;
+                }
+                
+                exercise.minutes = parseInt(minutes);
+                exercise.distance = parseFloat(distance);
+            } else {
+                const weight = document.getElementById('weight').value;
+                const reps = document.getElementById('reps').value;
+                const sets = document.getElementById('sets').value;
+                
+                if (!weight || !reps || !sets) {
+                    alert('Vul gewicht, reps en sets in!');
+                    return;
+                }
+                
+                exercise.weight = parseFloat(weight);
+                exercise.reps = parseInt(reps);
+                exercise.sets = parseInt(sets);
+            }
+
+            currentSession.push(exercise);
+            displayCurrentSession();
+            clearForm();
+            
+            playSound('success');
+            updateMotivationalMessage();
+        }
+
+        function displayCurrentSession() {
+            const container = document.getElementById('currentSession');
+            if (currentSession.length === 0) {
+                container.innerHTML = '<p style="color: #888;">Nog geen oefeningen gelogd...</p>';
+                return;
+            }
+
+            container.innerHTML = currentSession.map((ex, index) => {
+                let details = '';
+                if (ex.type === 'cardio') {
+                    details = `${ex.minutes} min | ${ex.distance} km | RPE: ${ex.rpe}/10`;
+                } else {
+                    details = `${ex.sets} sets × ${ex.reps} reps @ ${ex.weight}kg | RPE: ${ex.rpe}/10`;
+                }
+                
+                let instructionHtml = '';
+                if (ex.instruction) {
+                    instructionHtml = `<div style="color: #93c5fd; font-style: italic; margin-top: 5px;">📝 ${ex.instruction}</div>`;
+                }
+
+                let photoHtml = '';
+                if (ex.photo) {
+                    photoHtml = `
+                        <div class="photo-preview">
+                            <img src="${ex.photo}" alt="Progressiefoto">
+                            <button class="photo-delete-btn" onclick="removeSessionPhoto(${index})" title="Foto verwijderen">✕</button>
+                        </div>`;
+                }
+                
+                return `
+                    <div class="workout-entry">
+                        <button class="delete-btn" onclick="removeExercise(${index})">✕</button>
+                        <h4>${ex.name}</h4>
+                        <div class="workout-details">
+                            ${details}
+                            ${instructionHtml}
+                        </div>
+                        ${photoHtml}
+                        <label class="photo-upload-btn" for="photoInput_${index}">
+                            📸 ${ex.photo ? 'Foto vervangen' : 'Foto toevoegen'}
+                        </label>
+                        <input type="file" id="photoInput_${index}" accept="image/*" capture="environment"
+                            style="display:none;" onchange="attachSessionPhoto(${index}, this)">
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function attachSessionPhoto(index, input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Compress/resize image before storing to save localStorage space
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxSize = 800;
+                    let w = img.width, h = img.height;
+                    if (w > maxSize || h > maxSize) {
+                        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+                        else { w = Math.round(w * maxSize / h); h = maxSize; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    currentSession[index].photo = canvas.toDataURL('image/jpeg', 0.75);
+                    displayCurrentSession();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeSessionPhoto(index) {
+            currentSession[index].photo = null;
+            displayCurrentSession();
+        }
+
+        function removeExercise(index) {
+            currentSession.splice(index, 1);
+            displayCurrentSession();
+        }
+
+        function completeWorkout() {
+            if (currentSession.length === 0) {
+                alert('Voeg minimaal één oefening toe voordat je voltooit!');
+                return;
+            }
+
+            const workout = {
+                date: new Date().toISOString(),
+                exercises: [...currentSession],
+                totalVolume: currentSession.reduce((sum, ex) => {
+                    // Only count volume for strength exercises
+                    if (ex.type !== 'cardio' && ex.weight && ex.reps && ex.sets) {
+                        return sum + (ex.weight * ex.reps * ex.sets);
+                    }
+                    return sum;
+                }, 0)
+            };
+
+            workoutData.workouts.push(workout);
+            workoutData.totalWorkouts++;
+            workoutData.totalVolume += workout.totalVolume;
+            
+            updateStreak();
+            checkAchievements(workout);
+            saveData();
+            
+            currentSession = [];
+            displayCurrentSession();
+            updateStats();
+            
+            playSound('complete');
+            showAchievementPopup('💪 Workout Voltooid!', `Geweldig werk, Filip! Dat is workout #${workoutData.totalWorkouts}!`);
+        }
+
+        function updateStreak() {
+            const today = new Date().toDateString();
+            const lastWorkout = workoutData.lastWorkoutDate ? new Date(workoutData.lastWorkoutDate).toDateString() : null;
+            
+            if (lastWorkout === today) {
+                // Same day, don't update streak
+                return;
+            }
+            
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (lastWorkout === yesterday.toDateString()) {
+                workoutData.currentStreak++;
+                playSound('streak'); // Speel streak geluid af
+            } else if (lastWorkout !== today) {
+                workoutData.currentStreak = 1;
+            }
+            
+            workoutData.lastWorkoutDate = new Date().toISOString();
+        }
+
+        function checkAchievements(workout) {
+            const achievements = [];
+            
+            if (workoutData.totalWorkouts === 1 && !workoutData.achievements.includes('first')) {
+                achievements.push({ id: 'first', title: '🎯 Eerste Stap', desc: 'Je eerste workout voltooid!' });
+            }
+            if (workoutData.totalWorkouts === 5 && !workoutData.achievements.includes('five')) {
+                achievements.push({ id: 'five', title: '✨ Word Sterker', desc: '5 workouts voltooid!' });
+            }
+            if (workoutData.totalWorkouts === 10 && !workoutData.achievements.includes('ten')) {
+                achievements.push({ id: 'ten', title: '💎 Toegewijd', desc: '10 workouts! Je bent onstuitbaar!' });
+            }
+            if (workoutData.totalWorkouts === 25 && !workoutData.achievements.includes('twentyfive')) {
+                achievements.push({ id: 'twentyfive', title: '🏆 Elite Atleet', desc: '25 workouts! Ongelooflijke toewijding!' });
+            }
+            if (workoutData.currentStreak === 7 && !workoutData.achievements.includes('week')) {
+                achievements.push({ id: 'week', title: '🔥 Week Krijger', desc: '7-dagen streak! On fire!' });
+            }
+            if (workoutData.currentStreak === 30 && !workoutData.achievements.includes('month')) {
+                achievements.push({ id: 'month', title: '👑 Consistentie Koning', desc: '30-dagen streak! Legendarisch!' });
+            }
+
+            achievements.forEach(ach => {
+                workoutData.achievements.push(ach.id);
+                setTimeout(() => showAchievementPopup(ach.title, ach.desc), 500);
+            });
+        }
+
+        function showAchievementPopup(title, message) {
+            playSound('achievement'); // Speel achievement geluid af
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = `
+                <h2>${title}</h2>
+                <div class="achievement-icon">🎉</div>
+                <p>${message}</p>
+            `;
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                popup.style.animation = 'none';
+                popup.style.transform = 'translate(-50%, -50%) scale(0)';
+                setTimeout(() => popup.remove(), 300);
+            }, 3000);
+        }
+
+        function updateMotivationalMessage() {
+            const message = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+            document.getElementById('motivationalMessage').textContent = message;
+        }
+
+        function displayHistory() {
+            const container = document.getElementById('workoutHistory');
+            
+            if (workoutData.workouts.length === 0) {
+                container.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">Nog geen workouts. Start je reis!</p>';
+                return;
+            }
+
+            container.innerHTML = workoutData.workouts.slice().reverse().map((workout, revIndex) => {
+                const realIndex = workoutData.workouts.length - 1 - revIndex;
+                return `
+                <div class="workout-entry">
+                    <h4>Workout ${workoutData.workouts.length - revIndex} - ${new Date(workout.date).toLocaleDateString('nl-NL')}</h4>
+                    <div class="workout-details">
+                        ${workout.exercises.map((ex, exIndex) => {
+                            let line = '';
+                            if (ex.type === 'cardio') {
+                                line = `<div style="margin-bottom:8px;">${ex.name}: ${ex.minutes} min | ${ex.distance} km (RPE ${ex.rpe})`;
+                            } else {
+                                line = `<div style="margin-bottom:8px;">${ex.name}: ${ex.sets}×${ex.reps} @ ${ex.weight}kg (RPE ${ex.rpe})`;
+                            }
+                            if (ex.instruction) {
+                                line += `<br><span style="color: #93c5fd; font-style: italic; font-size: 0.9em;">📝 ${ex.instruction}</span>`;
+                            }
+                            if (ex.photo) {
+                                line += `<div class="photo-preview" style="margin-top:8px;">
+                                    <img src="${ex.photo}" alt="Progressiefoto">
+                                    <button class="photo-delete-btn" onclick="removeHistoryPhoto(${realIndex}, ${exIndex})" title="Foto verwijderen">✕</button>
+                                </div>`;
+                            }
+                            line += `<br>
+                                <label class="photo-upload-btn" for="histPhoto_${realIndex}_${exIndex}" style="margin-top:6px;">
+                                    📸 ${ex.photo ? 'Foto vervangen' : 'Foto toevoegen'}
+                                </label>
+                                <input type="file" id="histPhoto_${realIndex}_${exIndex}" accept="image/*" capture="environment"
+                                    style="display:none;" onchange="attachHistoryPhoto(${realIndex}, ${exIndex}, this)">
+                            `;
+                            line += '</div>';
+                            return line;
+                        }).join('')}
+                        <div style="margin-top: 10px; color: #60a5fa; font-weight: bold;">
+                            Totaal Volume: ${workout.totalVolume.toFixed(1)}kg
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function attachHistoryPhoto(workoutIndex, exIndex, input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxSize = 800;
+                    let w = img.width, h = img.height;
+                    if (w > maxSize || h > maxSize) {
+                        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+                        else { w = Math.round(w * maxSize / h); h = maxSize; }
+                    }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    workoutData.workouts[workoutIndex].exercises[exIndex].photo = canvas.toDataURL('image/jpeg', 0.75);
+                    saveData();
+                    displayHistory();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeHistoryPhoto(workoutIndex, exIndex) {
+            workoutData.workouts[workoutIndex].exercises[exIndex].photo = null;
+            saveData();
+            displayHistory();
+        }
+
+        function displayStats() {
+            document.getElementById('streakDisplay').textContent = workoutData.currentStreak;
+            
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const thisWeekWorkouts = workoutData.workouts.filter(w => 
+                new Date(w.date) >= weekStart
+            ).length;
+            
+            const weekProgress = (thisWeekWorkouts / 2) * 100;
+            document.getElementById('weekProgressBar').style.width = Math.min(weekProgress, 100) + '%';
+
+            const achievementsList = document.getElementById('achievementsList');
+            const achievementTitles = {
+                first: '🎯 Eerste Stap',
+                five: '✨ Word Sterker',
+                ten: '💎 Toegewijd',
+                twentyfive: '🏆 Elite Atleet',
+                week: '🔥 Week Krijger',
+                month: '👑 Consistentie Koning'
+            };
+
+            if (workoutData.achievements.length === 0) {
+                achievementsList.innerHTML = '<p style="color: #888;">Voltooi workouts om prestaties te ontgrendelen!</p>';
+            } else {
+                achievementsList.innerHTML = workoutData.achievements.map(id => 
+                    `<span class="badge">${achievementTitles[id] || id}</span>`
+                ).join('');
+            }
+
+            const totalVolume = workoutData.workouts.reduce((sum, w) => sum + w.totalVolume, 0);
+            const avgVolume = workoutData.totalWorkouts > 0 ? (totalVolume / workoutData.totalWorkouts).toFixed(1) : 0;
+
+            document.getElementById('statsInfo').innerHTML = `
+                <div class="workout-details">
+                    <div style="margin-bottom: 10px;">📊 Totaal Volume Getild: <strong>${totalVolume.toFixed(1)}kg</strong></div>
+                    <div style="margin-bottom: 10px;">📈 Gemiddeld per Workout: <strong>${avgVolume}kg</strong></div>
+                    <div style="margin-bottom: 10px;">💪 Totaal Workouts: <strong>${workoutData.totalWorkouts}</strong></div>
+                    <div style="margin-bottom: 10px;">🔥 Huidige Streak: <strong>${workoutData.currentStreak} dagen</strong></div>
+                </div>
+            `;
+        }
+
+        function updateStats() {
+            document.getElementById('workoutCount').textContent = workoutData.totalWorkouts;
+            document.getElementById('currentStreak').textContent = workoutData.currentStreak;
+            document.getElementById('totalVolume').textContent = Math.round(workoutData.totalVolume);
+            
+            const avgVol = workoutData.totalWorkouts > 0 ? Math.round(workoutData.totalVolume / workoutData.totalWorkouts) : 0;
+            document.getElementById('avgVolume').textContent = avgVol;
+        }
+
+        function clearForm() {
+            document.getElementById('exerciseName').value = '';
+            document.getElementById('exerciseInstruction').value = '';
+            document.getElementById('weight').value = '';
+            document.getElementById('reps').value = '';
+            document.getElementById('sets').value = '';
+            document.getElementById('minutes').value = '';
+            document.getElementById('distance').value = '';
+            document.getElementById('rpe').value = '';
+            
+            // Remove video link if present
+            const videoContainer = document.getElementById('videoLinkContainer');
+            if (videoContainer) {
+                videoContainer.remove();
+            }
+        }
+
+        function confirmClearData() {
+            if (confirm('⚠️ Weet je zeker dat je ALLE workout data wilt verwijderen? Dit kan niet ongedaan worden gemaakt!')) {
+                if (confirm('Echt zeker? Dit wist alles!')) {
+                    workoutData = {
+                        workouts: [],
+                        totalWorkouts: 0,
+                        currentStreak: 0,
+                        lastWorkoutDate: null,
+                        achievements: [],
+                        totalVolume: 0
+                    };
+                    currentSession = [];
+                    saveData();
+                    updateStats();
+                    displayCurrentSession();
+                    displayHistory();
+                    alert('✅ Alle data is gewist!');
+                }
+            }
+        }
+
+        async function exportPDF() {
+            if (workoutData.workouts.length === 0) {
+                alert('Geen data om te exporteren!');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const margin = 18;
+            const contentW = pageW - margin * 2;
+            let y = margin;
+
+            const blue = [59, 130, 246];
+            const lightBlue = [147, 197, 253];
+            const darkBg = [15, 23, 42];
+            const slateText = [148, 163, 184];
+            const white = [255, 255, 255];
+
+            function checkNewPage(needed = 20) {
+                if (y + needed > pageH - margin) {
+                    doc.addPage();
+                    // subtle top bar on every new page
+                    doc.setFillColor(...blue);
+                    doc.rect(0, 0, pageW, 8, 'F');
+                    y = 18;
+                }
+            }
+
+            // ── COVER PAGE ──
+            doc.setFillColor(...darkBg);
+            doc.rect(0, 0, pageW, pageH, 'F');
+
+            // Accent bar top
+            doc.setFillColor(...blue);
+            doc.rect(0, 0, pageW, 12, 'F');
+
+            // Title
+            doc.setTextColor(...white);
+            doc.setFontSize(28);
+            doc.setFont('helvetica', 'bold');
+            doc.text('💪 REVALIDATIE FILIP', pageW / 2, 70, { align: 'center' });
+
+            doc.setFontSize(13);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...lightBlue);
+            doc.text('Workout Logboek', pageW / 2, 82, { align: 'center' });
+
+            // Stats box
+            const bx = margin, by = 105, bw = contentW, bh = 55;
+            doc.setFillColor(30, 41, 59);
+            doc.roundedRect(bx, by, bw, bh, 5, 5, 'F');
+            doc.setDrawColor(...blue);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(bx, by, bw, bh, 5, 5, 'S');
+
+            const avgVol = workoutData.totalWorkouts > 0
+                ? (workoutData.totalVolume / workoutData.totalWorkouts).toFixed(1)
+                : 0;
+
+            const stats = [
+                { label: 'Totaal Workouts', value: workoutData.totalWorkouts },
+                { label: 'Huidige Streak', value: workoutData.currentStreak + ' d' },
+                { label: 'Totaal Volume', value: Math.round(workoutData.totalVolume) + 'kg' },
+                { label: 'Gem. Volume', value: avgVol + 'kg' }
+            ];
+            const colW = bw / stats.length;
+            stats.forEach((s, i) => {
+                const cx = bx + colW * i + colW / 2;
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...blue);
+                doc.text(String(s.value), cx, by + 28, { align: 'center' });
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(...slateText);
+                doc.text(s.label, cx, by + 38, { align: 'center' });
+            });
+
+            // Date
+            doc.setFontSize(10);
+            doc.setTextColor(...slateText);
+            doc.text(`Gegenereerd op: ${new Date().toLocaleDateString('nl-NL')}`, pageW / 2, 185, { align: 'center' });
+
+            // Accent bar bottom
+            doc.setFillColor(...blue);
+            doc.rect(0, pageH - 12, pageW, 12, 'F');
+
+            // ── WORKOUT PAGES ──
+            const sorted = workoutData.workouts.slice().reverse();
+            for (let wi = 0; wi < sorted.length; wi++) {
+                const workout = sorted[wi];
+                const wNum = workoutData.workouts.length - wi;
+                doc.addPage();
+
+                // Page header bar
+                doc.setFillColor(...blue);
+                doc.rect(0, 0, pageW, 12, 'F');
+                doc.setTextColor(...white);
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.text('REVALIDATIE FILIP — Workout Logboek', margin, 8);
+                doc.text(`Pagina ${doc.internal.getCurrentPageInfo().pageNumber}`, pageW - margin, 8, { align: 'right' });
+
+                y = 22;
+
+                // Workout title
+                doc.setFontSize(15);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...blue);
+                doc.text(`Workout ${wNum}  —  ${new Date(workout.date).toLocaleDateString('nl-NL')}`, margin, y);
+                y += 4;
+
+                // Divider
+                doc.setDrawColor(...blue);
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, pageW - margin, y);
+                y += 8;
+
+                // Volume badge
+                doc.setFillColor(30, 41, 59);
+                doc.roundedRect(margin, y, contentW, 10, 3, 3, 'F');
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(...lightBlue);
+                doc.text(`Totaal Volume: ${workout.totalVolume.toFixed(1)} kg`, margin + 4, y + 7);
+                y += 17;
+
+                // Exercises
+                for (let ei = 0; ei < workout.exercises.length; ei++) {
+                    const ex = workout.exercises[ei];
+
+                    // Estimate height needed for this exercise block
+                    let neededH = 28;
+                    if (ex.instruction) neededH += 8;
+                    if (ex.photo) neededH += 68;
+                    checkNewPage(neededH);
+
+                    // Exercise card bg
+                    doc.setFillColor(22, 33, 52);
+                    doc.roundedRect(margin, y, contentW, neededH - 4, 3, 3, 'F');
+                    doc.setDrawColor(71, 85, 105);
+                    doc.setLineWidth(0.3);
+                    doc.roundedRect(margin, y, contentW, neededH - 4, 3, 3, 'S');
+
+                    // Accent left bar
+                    doc.setFillColor(...blue);
+                    doc.roundedRect(margin, y, 3, neededH - 4, 1, 1, 'F');
+
+                    // Exercise name
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(...white);
+                    doc.text(ex.name, margin + 8, y + 8);
+
+                    // Details
+                    let detailText = '';
+                    if (ex.type === 'cardio') {
+                        detailText = `${ex.minutes} min  |  ${ex.distance} km  |  RPE: ${ex.rpe}/10`;
+                    } else {
+                        detailText = `${ex.sets} sets × ${ex.reps} reps  @  ${ex.weight} kg  |  RPE: ${ex.rpe}/10`;
+                    }
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(...lightBlue);
+                    doc.text(detailText, margin + 8, y + 16);
+
+                    let cardY = y + 22;
+
+                    // Instruction
+                    if (ex.instruction) {
+                        doc.setFontSize(8);
+                        doc.setTextColor(...slateText);
+                        const lines = doc.splitTextToSize(`📝 ${ex.instruction}`, contentW - 16);
+                        doc.text(lines, margin + 8, cardY);
+                        cardY += lines.length * 5;
+                    }
+
+                    y += neededH;
+
+                    // Photo (outside card, below)
+                    if (ex.photo) {
+                        checkNewPage(75);
+                        try {
+                            const imgProps = doc.getImageProperties(ex.photo);
+                            const imgW = Math.min(contentW * 0.8, 120);
+                            const imgH = (imgProps.height / imgProps.width) * imgW;
+                            const clampedH = Math.min(imgH, 70);
+                            const clampedW = (clampedH / imgH) * imgW;
+                            doc.addImage(ex.photo, 'JPEG', margin, y, clampedW, clampedH);
+                            y += clampedH + 5;
+                        } catch(e) {
+                            // skip broken image
+                        }
+                    }
+
+                    y += 4;
+                }
+            }
+
+            // Footer on last page
+            doc.setFillColor(...blue);
+            doc.rect(0, pageH - 12, pageW, 12, 'F');
+            doc.setTextColor(...white);
+            doc.setFontSize(8);
+            doc.text('Revalidatie Filip — Workout Logboek', pageW / 2, pageH - 5, { align: 'center' });
+
+            doc.save(`Revalidatie_Filip_${new Date().toLocaleDateString('nl-NL').replace(/\//g, '-')}.pdf`);
+        }
+
+        function exportData() {
+            if (workoutData.workouts.length === 0) {
+                alert('Geen data om te exporteren!');
+                return;
+            }
+
+            // Create formatted text of all workouts
+            let emailBody = 'REVALIDATIE FILIP - WORKOUT DATA\n';
+            emailBody += '================================\n\n';
+            emailBody += `Totaal Workouts: ${workoutData.totalWorkouts}\n`;
+            emailBody += `Huidige Streak: ${workoutData.currentStreak} dagen\n`;
+            emailBody += `Totaal Volume: ${workoutData.totalVolume.toFixed(1)}kg\n\n`;
+            emailBody += '================================\n\n';
+
+            workoutData.workouts.forEach((workout, index) => {
+                const date = new Date(workout.date).toLocaleDateString('nl-NL');
+                emailBody += `WORKOUT ${index + 1} - ${date}\n`;
+                emailBody += '----------------------------\n';
+                
+                workout.exercises.forEach(ex => {
+                    emailBody += `${ex.name}:\n`;
+                    if (ex.type === 'cardio') {
+                        emailBody += `  ${ex.minutes} min | ${ex.distance} km | RPE ${ex.rpe}\n`;
+                    } else {
+                        emailBody += `  ${ex.sets}×${ex.reps} @ ${ex.weight}kg | RPE ${ex.rpe}\n`;
+                    }
+                    if (ex.instruction) {
+                        emailBody += `  📝 ${ex.instruction}\n`;
+                    }
+                    emailBody += '\n';
+                });
+                
+                emailBody += `Volume: ${workout.totalVolume.toFixed(1)}kg\n`;
+                emailBody += '\n================================\n\n';
+            });
+
+            // Create mailto link
+            const subject = encodeURIComponent('Revalidatie Filip - Workout Data');
+            const body = encodeURIComponent(emailBody);
+            const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+            
+            // Open email client
+            window.location.href = mailtoLink;
+        }
+
+        function showQuestionnaires() {
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.style.transform = 'translate(-50%, -50%) scale(1)';
+            popup.innerHTML = `
+                <h2>📋 Vragenlijsten</h2>
+                <p style="margin: 20px 0; color: #94a3b8;">Selecteer een vragenlijst:</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                    <button onclick="openQuestionnaire('acl-rsi')" style="padding: 15px; background: rgba(59, 130, 246, 0.3); border: 2px solid #3b82f6; border-radius: 12px; color: #e0e7ff; font-weight: bold; cursor: pointer;">
+                        🦵 ACL-RSI<br>
+                        <span style="font-size: 0.85em; font-weight: normal; color: #94a3b8;">ACL Letsel Vragenlijst</span>
+                    </button>
+                    
+                    <button onclick="openQuestionnaire('visa-a')" style="padding: 15px; background: rgba(59, 130, 246, 0.3); border: 2px solid #3b82f6; border-radius: 12px; color: #e0e7ff; font-weight: bold; cursor: pointer;">
+                        🦶 VISA-A<br>
+                        <span style="font-size: 0.85em; font-weight: normal; color: #94a3b8;">Achillespees Letsel Vragenlijst</span>
+                    </button>
+                    
+                    <button onclick="closeQuestionnaires()" style="padding: 12px; background: rgba(239, 68, 68, 0.3); border: 2px solid #ef4444; border-radius: 12px; color: #e0e7ff; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                        ✕ Sluiten
+                    </button>
+                </div>
+            `;
+            popup.id = 'questionnairePopup';
+            document.body.appendChild(popup);
+        }
+
+        function closeQuestionnaires() {
+            const popup = document.getElementById('questionnairePopup');
+            if (popup) {
+                popup.style.transform = 'translate(-50%, -50%) scale(0)';
+                setTimeout(() => popup.remove(), 300);
+            }
+        }
+
+        function openQuestionnaire(type) {
+            closeQuestionnaires();
+            
+            if (type === 'acl-rsi') {
+                // ACL-RSI questionnaire - placeholder alert
+                alert('ACL-RSI Vragenlijst\n\nDeze vragenlijst meet je psychologische gereedheid om terug te keren naar sport na een ACL blessure.\n\nDe vragenlijst bevat 12 vragen over emoties, zelfvertrouwen en risicobeleving.\n\n(URL kan hier worden toegevoegd)');
+            } else if (type === 'visa-a') {
+                // VISA-A questionnaire - open Google Form
+                window.open('https://docs.google.com/forms/d/10kHq35Xb_JLUHDxcw6AqmHYBUJbUlfgVWv2BjEVLdbU/viewform', '_blank');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('workoutData', JSON.stringify(workoutData));
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === 'kine') {
+                document.getElementById('passwordOverlay').classList.add('hidden');
+                sessionStorage.setItem('authenticated', 'true');
+            } else {
+                const err = document.getElementById('passwordError');
+                err.textContent = '❌ Verkeerd wachtwoord, probeer opnieuw.';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+                setTimeout(() => err.textContent = '', 2500);
+            }
+        }
+
+        // Check if already authenticated this session
+        if (sessionStorage.getItem('authenticated') === 'true') {
+            document.getElementById('passwordOverlay').classList.add('hidden');
+        } else {
+            // Focus password input on load
+            window.addEventListener('load', () => {
+                document.getElementById('passwordInput').focus();
+            });
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            updateStats();
+            displayCurrentSession();
+            updateMotivationalMessage();
+        });
+
+        // Save before page unload
+        window.addEventListener('beforeunload', () => {
+            saveData();
+        });
+
+        // Update motivational message periodically
+        setInterval(updateMotivationalMessage, 30000);
+    </script>
+</body>
+</html>
